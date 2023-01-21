@@ -19,8 +19,8 @@ calculateRoute.post("/", (req, res) => {
   let TotalMaturityValue = annualInstalmentAmount * (z / rate);
   let TotalInterestGained = TotalMaturityValue - totalInvestmentAmount;
 
-  console.log("dat::: ", TotalMaturityValue);
-  console.log("rate::: ", rate);
+  //   console.log("dat::: ", TotalMaturityValue);
+  //   console.log("rate::: ", rate);
   res.send({ totalInvestmentAmount, TotalInterestGained, TotalMaturityValue });
 });
 
