@@ -7,7 +7,6 @@ const { userRoute } = require("./Routes/userRoute");
 
 const app = express();
 app.use(express.json());
-
 app.get("/", (req, res) => {
   res.send("Welcome to homepage");
 });
@@ -22,6 +21,6 @@ app.listen(PORT || 8080, async () => {
     console.log(`server running at http://localhost:${PORT}`);
   } catch (err) {
     console.log("unable to connect with database");
-    console.log({ err: err.message });
+    console.log({ err: err });
   }
 });
