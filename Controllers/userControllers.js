@@ -1,10 +1,19 @@
 const { UserModel } = require("../Models/userModel");
 var jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
+const SALT_ROUND = process.env.SALT_ROUND || 10;
+console.log("Saltrounded: ", SALT_ROUND);
 
 const register = async (req, res) => {
   let userData = req.body;
-  let { email } = userData;
+  let { email, name, password } = userData;
+  if (!email || !name || !password) {
+    return res.send({
+      status: "Failed",
+      message: "Please fill all the fields",
+    });
+  }
   try {
     let isUserPresent = await UserModel.find({ email: email });
 
@@ -14,10 +23,21 @@ const register = async (req, res) => {
         message: "An user already exist with this email",
       });
     } else {
-      let newUser = UserModel(userData);
-      await newUser.save();
-      res.send({ status: "success", message: "Register successfull" });
-      //   console.log("isUserpresent: ", isUserPresent);
+      bcrypt.hash(password, Number(SALT_ROUND), async function (err, hash) {
+        if (err) {
+          console.log(err.message);
+          res.send({
+            status: "Failed",
+            message: "Something went wrong please try again later",
+          });
+        } else {
+          let newUser = UserModel({ email, name, password: hash });
+          await newUser.save();
+          res.send({ status: "success", message: "Register successfull" });
+        }
+
+        // Store hash in your password DB.
+      });
     }
   } catch (err) {
     console.log(err.message);
@@ -33,19 +53,21 @@ const login = async (req, res) => {
 
     console.log("isUser preslogin: ", isUserPresent);
     if (isUserPresent) {
-      if (isUserPresent.password === password) {
-        var token = jwt.sign(
-          { name: name, email: email, userId: isUserPresent._id },
-          process.env.SECRET_KEY
-        );
-        res.send({
-          message: "user present for login",
-          status: "success",
-          token: token,
-        });
-      } else {
-        res.send({ status: "failed", message: "Wrong password" });
-      }
+      bcrypt.compare(password, isUserPresent.password, function (err, result) {
+        if (result) {
+          var token = jwt.sign(
+            { name: name, email: email, userId: isUserPresent._id },
+            process.env.SECRET_KEY
+          );
+          res.send({
+            message: "user present for login",
+            status: "success",
+            token: token,
+          });
+        } else {
+          res.send({ status: "failed", message: "Wrong password" });
+        }
+      });
     } else {
       res.send({
         status: "failed",

@@ -1,15 +1,17 @@
 const express = require("express");
 const connection = require("./Config/db");
-const { calculateRoute } = require("./Routes/appRoute");
+const { calculateRoute } = require("./Routes/calculatorRoute");
 require("dotenv").config();
 const PORT = process.env.PORT;
 const { userRoute } = require("./Routes/userRoute");
 
 const app = express();
-app.use(express.json());
-app.get("/", (req, res) => {
-  res.send("Welcome to homepage");
-});
+app.use(express.json({ extended: false }));
+// app.get("/", (req, res) => {
+//   res.send("Welcome to homepage");
+// });
+app.use("/", require("./Routes/redirect"));
+app.use("/api/url", require("./Routes/url"));
 app.use("/user", userRoute);
 app.use("/calculate", calculateRoute);
 
